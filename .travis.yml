@@ -30,7 +30,7 @@ install:
 
 script:
   - CI/check_codestyle.sh
-  - export CFLAGS="-g -fsanitize=address"
+    #  - export CFLAGS="-g -fsanitize=address"
   - autoreconf -fvi
   - ./configure --enable-tls
   - make
@@ -43,7 +43,7 @@ script:
   - git clone https://github.com/rsyslog/rsyslog.git
   - cd rsyslog
   - autoreconf -fvi
-  - ./configure --enable-testbench --enable-relp --enable-omrelp-default-port=13515 --enable-imdiag
+  - ./configure --enable-omstdout --enable-testbench --enable-relp --enable-omrelp-default-port=13515 --enable-imdiag
   - make
   - cd tests
   - export LD_LIBRARY_PATH=/usr/local/lib
