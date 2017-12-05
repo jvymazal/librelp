@@ -2,13 +2,56 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([librelp], [1.2.14.master], [rgerhards@adiscon.com])
+AC_INIT([librelp], [1.2.15.master], [rgerhards@adiscon.com])
 AM_INIT_AUTOMAKE
 AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_CONFIG_SRCDIR([src/relp.c])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
+
+echo HOST: ${host}
+case "${host}" in
+  *-*-linux*)
+    AC_DEFINE([OS_LINUX], [1], [Indicator for a Linux OS])
+    os_type="linux"
+  ;;
+  *-*-*darwin*|*-*-dragonfly*|*-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
+    AC_DEFINE([OS_BSD], [1], [Indicator for a BSD OS])
+    os_type="bsd"
+  ;;
+  *-apple-*)
+    AC_DEFINE([OS_APPLE], [1], [Indicator for APPLE OS])
+    os_type="apple"
+  ;;
+  *-*-kfreebsd*)
+    # kernel is FreeBSD, but userspace is glibc - i.e. like linux
+    # do not DEFINE OS_BSD
+    os_type="bsd"
+  ;;
+  *-*-solaris*)
+    os_type="solaris"
+    AC_DEFINE([OS_SOLARIS], [1], [Indicator for a Solaris OS])
+    AC_DEFINE([_POSIX_PTHREAD_SEMANTICS], [1], [Use POSIX pthread semantics])
+    AC_DEFINE([_XOPEN_SOURCE], [600], [Use X/Open CAE Specification])
+    CPPFLAGS="-std=c99 $CPPFLAGS"
+    CFLAGS="-std=c99 $CFLAGS"
+    SOL_LIBS="-lsocket -lnsl"
+    # Solaris libuuid does not ship with a pkgconfig file so override the appropriate
+    # variables (but only if they have not been set by the user).
+    LIBUUID_CFLAGS=${LIBUUID_CFLAGS:= }
+    LIBUUID_LIBS=${LIBUUID_LIBS:=-luuid}
+    AC_SUBST(SOL_LIBS)
+  ;;
+  *-*-aix*)
+    os_type="aix"
+    AC_DEFINE([OS_AIX], [1], [Indicator for a AIX OS])
+  ;;
+esac
+AM_CONDITIONAL(OS_APPLE, test x$os_type == xapple)
+AM_CONDITIONAL(xOS_LINUX, test x$os_type == xlinux)
+AM_CONDITIONAL(OS_LINUX, test x$os_type == xlinux)
+AM_CONDITIONAL(OS_SOLARIS, test x$os_type == xsolaris)
 
 # Checks for programs.
 AC_PROG_CC
